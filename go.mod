@@ -17,5 +17,3 @@ require (
 	github.com/yuin/goldmark v1.7.13 // indirect
 	golang.org/x/sys v0.45.0 // indirect
 )
-
-replace github.com/gausszhou/gruff => ../gruff
