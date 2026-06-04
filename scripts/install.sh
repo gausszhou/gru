@@ -21,7 +21,8 @@ case "$OS" in
     linux|darwin) ;;
     *)
         echo "Unsupported OS: $OS"
-        echo "For Windows, use: iex ((New-Object System.Net.WebClient).DownloadString('https://github.com/$REPO/releases/latest/download/install.ps1'))"
+        echo "For Windows, run in PowerShell:"
+        echo "  irm https://github.com/$REPO/releases/latest/download/install.ps1 | iex"
         exit 1
         ;;
 esac
@@ -46,14 +47,15 @@ chmod +x "$INSTALL_DIR/gru"
 
 echo "Installed gru $VERSION to $INSTALL_DIR/gru"
 
-# Check PATH
-case ":$PATH:" in
-    *:"$INSTALL_DIR":*) ;;
-    *)
-        echo ""
-        echo "NOTE: $INSTALL_DIR is not in your PATH."
-        echo "Add it with: export PATH=\"\$PATH:$INSTALL_DIR\""
-        echo "Or add this line to your ~/.bashrc / ~/.zshrc:"
-        echo "  export PATH=\"\$PATH:$INSTALL_DIR\""
-        ;;
-esac
+# Add to PATH
+if ! echo ":$PATH:" | grep -q ":$INSTALL_DIR:"; then
+    RC="$HOME/.bashrc"
+    [ -n "$ZSH_VERSION" ] && RC="$HOME/.zshrc"
+    [ -f "$HOME/.profile" ] && RC="$HOME/.profile"
+
+    echo "" >> "$RC"
+    echo "# gru" >> "$RC"
+    echo "export PATH=\"\$PATH:$INSTALL_DIR\"" >> "$RC"
+    echo "Added $INSTALL_DIR to PATH in $RC"
+    echo "Run: source $RC"
+fi

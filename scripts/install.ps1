@@ -18,29 +18,23 @@ $Version = $Release.tag_name
 Write-Host "Found gru $Version"
 
 # Download and extract
-$ArchiveName = "gru-windows-$Arch.zip"
+$ArchiveName = "gru-windows-$Arch.tar.gz"
 $Url = "https://github.com/$Repo/releases/download/$Version/$ArchiveName"
-$ZipPath = Join-Path $env:TEMP "gru.zip"
-$ExePath = Join-Path $InstallDir "gru.exe"
+$ArchivePath = Join-Path $env:TEMP "gru.tar.gz"
 
 Write-Host "Downloading $Url..."
-Invoke-WebRequest -Uri $Url -OutFile $ZipPath
+Invoke-WebRequest -Uri $Url -OutFile $ArchivePath
 
 Write-Host "Extracting..."
 New-Item -ItemType Directory -Force -Path $InstallDir | Out-Null
-Expand-Archive -Path $ZipPath -DestinationPath $InstallDir -Force
-Remove-Item $ZipPath
+tar xzf $ArchivePath -C $InstallDir gru.exe
+Remove-Item $ArchivePath
 
-Write-Host "Installed gru $Version to $ExePath"
+Write-Host "Installed gru $Version to $(Join-Path $InstallDir gru.exe)"
 
-# Check PATH
-$UserPath = [Environment]::GetEnvironmentVariable("Path", "User")
-if ($UserPath -and $UserPath.Contains($InstallDir)) {
-    Write-Host "Already in PATH"
-} else {
-    Write-Host ""
-    Write-Host "NOTE: $InstallDir is not in your PATH."
-    Write-Host "Add it with:"
-    Write-Host "  [Environment]::SetEnvironmentVariable('Path', [Environment]::GetEnvironmentVariable('Path', 'User') + ';$InstallDir', 'User')"
-    Write-Host "Then restart your terminal."
+# Add to PATH
+$userPath = [Environment]::GetEnvironmentVariable("Path", "User")
+if ($userPath -notlike "*$InstallDir*") {
+    [Environment]::SetEnvironmentVariable("Path", "$userPath;$InstallDir", "User")
+    Write-Host "Added gru to user PATH (restart terminal or run: refreshenv)"
 }
